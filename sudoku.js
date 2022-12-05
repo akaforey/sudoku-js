@@ -50,6 +50,11 @@ cells.forEach(function (cell) {
     // Prompt the user for a value for the cell
     var value = prompt("Enter a value for cell (" + row + ", " + column + "):");
 
+    if (value == 0) {
+        cell.setHTML("", new Sanitizer());
+        return;
+      }
+
     // Check if the value is valid
     if (value >= 1 && value <= 9) {
       // Select all the cells in the row
@@ -71,8 +76,6 @@ cells.forEach(function (cell) {
         }
       });
 
-
-
       var baseRow = Math.floor((row - 1) / 3) * 3
       var baseCol = Math.floor((column - 1) / 3) * 3
       var blockCells = document.querySelectorAll('[data-row="' + (baseRow + 1) + '"][data-column="' + (baseCol + 1) + '"], [data-row="' + (baseRow + 1) + '"][data-column="' + (baseCol + 2) + '"], [data-row="' + (baseRow + 1) + '"][data-column="' + (baseCol + 3) + '"], [data-row="' + (baseRow + 2) + '"][data-column="' + (baseCol + 1) + '"], [data-row="' + (baseRow + 2) + '"][data-column="' + (baseCol + 2) + '"], [data-row="' + (baseRow + 2) + '"][data-column="' + (baseCol + 3) + '"], [data-row="' + (baseRow + 3) + '"][data-column="' + (baseCol + 1) + '"], [data-row="' + (baseRow + 3) + '"][data-column="' + (baseCol + 2) + '"], [data-row="' + (baseRow + 3) + '"][data-column="' + (baseCol + 3) + '"]')
@@ -89,7 +92,7 @@ cells.forEach(function (cell) {
 
       // Update the cell's value if it is unique
       if (isUnique) {
-        cell.innerHTML = value;
+        cell.setHTML(value, new Sanitizer());
       } else {
         // Show an error message if the value is not unique
 
@@ -208,7 +211,7 @@ function uniqueSudoku(board, row, column) {
   
     var foundSolution = false
     var uniqueSolution = true
-    var newNum = 0
+    // var newNum = 0
     var oldNum = board[row][column]
     // Try all the possible values for the current cell
     for (var value = 1; value <= 9; value++) {
@@ -223,7 +226,7 @@ function uniqueSudoku(board, row, column) {
                 break;
             } else {
                 foundSolution = true;
-                newNum = numbers[value-1];
+                // newNum = numbers[value-1];
             }
             // return true; // If the puzzle is solved, return true
             }
@@ -235,7 +238,7 @@ function uniqueSudoku(board, row, column) {
                 } else {
                 newNum = numbers[value-1];
                     foundSolution = true;
-                    newNum = numbers[value-1];
+                    // newNum = numbers[value-1];
                 }
             // return true; // If the puzzle is solved, return true
             }
@@ -272,6 +275,18 @@ var myBoard = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0]
   ];
+
+  var myClues = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1]
+  ];
   
   // Call the solveSudoku function to fill in the cells with valid values
   if (solveSudoku(myBoard, 0, 0)) {
@@ -289,14 +304,30 @@ shuffledCells.sort(function() {
     return Math.random() - 0.5;
   });
 
+  
+// var copyBoard = myBoard.slice();
+var copyBoard = [];
+
+for (var i = 0; i < myBoard.length; i++){
+    copyBoard[i] = myBoard[i].slice();
+}
+
+
 while (shuffledCells.length > 0){
-    var tempVal = myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9]
-    myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = 0
-    if (uniqueSudoku(myBoard, 0, 0)) {
+    for (var i = 0; i < myBoard.length; i++){
+        for (var j=0; j < i.length; j++){
+            copyBoard[i][j] = myBoard[i][j] * myClues[i][j];
+        }
+    }
+    
+    var tempVal = copyBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9]
+    copyBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = 0
+    if (uniqueSudoku(copyBoard, 0, 0)) {
+        myClues[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = 0;
         shuffledCells.shift();
         continue;
     } else {
-        myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = tempVal;
+        copyBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = tempVal;
         shuffledCells.shift();
         continue;
     }
@@ -305,14 +336,15 @@ while (shuffledCells.length > 0){
 var countCells = 0;
 for (var row = 0; row < 9; row++) {
     for (var col = 0; col < 9; col++) {
-        if (myBoard[row][col] != 0) {
+        if (myClues[row][col]==1) {
+            // if (myBoard[row][col] >= 1 && myBoard[row][col] <= 9) {
             countCells++;
-            document.querySelector('[data-row="' + (row + 1) + '"][data-column="' + (col + 1) + '"]').innerHTML = myBoard[row][col];
+            document.querySelector('[data-row="' + (row + 1) + '"][data-column="' + (col + 1) + '"]').setHTML(myBoard[row][col], new Sanitizer());
         }
     }
 }
 
-console.log(countCells)
+// console.log(countCells)
 
 // selectedCells = shuffledCells.slice(0, 21);
 
