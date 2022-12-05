@@ -1,0 +1,20 @@
+/* CSS for the Sudoku board */
+#sudoku-board {
+    display: flex;
+    flex-wrap: wrap;
+    width: 540px; /* 9 cells * 60px */
+  }
+  
+  .sudoku-row {
+    display: flex;
+  }
+  
+  .sudoku-cell {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #333;
+    text-align: center;
+    font-size: 24px;
+    line-height: 60px;
+  }
+  
