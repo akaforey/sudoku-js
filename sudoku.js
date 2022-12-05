@@ -184,6 +184,79 @@ function solveSudoku(board, row, column) {
   return false;
 }
 
+
+function uniqueSudoku(board, row, column) {
+    // Check if the row and column are out of bounds, which means we have reached the end of the board
+    if (row > 8) {
+      return true; // The puzzle is solved, return true
+    }
+  
+    // If the current cell is not empty, move to the next cell
+    if (board[row][column] != 0) {
+      if (column == 8) {
+        return uniqueSudoku(board, row + 1, 0);
+      } else {
+        return uniqueSudoku(board, row, column + 1);
+      }
+    }
+
+    var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    // Sort the array in a random order
+    numbers.sort(function() {
+    return Math.random() - 0.5;
+    });
+  
+    var foundSolution = false
+    var uniqueSolution = true
+    var newNum = 0
+    var oldNum = board[row][column]
+    // Try all the possible values for the current cell
+    for (var value = 1; value <= 9; value++) {
+      // Check if the value is valid for the current cell
+      if (isValidValue(board, row, column, numbers[value-1])) {
+        // If the value is valid, update the board and move to the next cell
+        board[row][column] = numbers[value-1];
+        if (column == 8) {
+          if (uniqueSudoku(board, row + 1, 0)) {
+            if (foundSolution){
+                uniqueSolution = false;
+                break;
+            } else {
+                foundSolution = true;
+                newNum = numbers[value-1];
+            }
+            // return true; // If the puzzle is solved, return true
+            }
+        } else {
+            if (uniqueSudoku(board, row, column + 1)) {
+                if (foundSolution){
+                    uniqueSolution = false;
+                    break;
+                } else {
+                newNum = numbers[value-1];
+                    foundSolution = true;
+                    newNum = numbers[value-1];
+                }
+            // return true; // If the puzzle is solved, return true
+            }
+        }
+        
+        // If the puzzle is not solved, reset the cell and try the next value
+        board[row][column] = 0;
+        }
+    }
+
+    if (foundSolution && uniqueSolution){
+        board[row][column] = oldNum
+        return true;
+    }
+
+  
+
+  // If none of the values worked, return false
+  return false;
+}
+
   
 // JavaScript to generate a valid Sudoku board with a unique solution
 
@@ -211,16 +284,42 @@ var myBoard = [
     console.error("Error: Sudoku puzzle is not solvable!");
   }
   
-var selectedCells = Array.from({length: 81}, (v, i) => i);
-selectedCells.sort(function() {
+var shuffledCells = Array.from({length: 81}, (v, i) => i);
+shuffledCells.sort(function() {
     return Math.random() - 0.5;
   });
-selectedCells = selectedCells.slice(0, 21);
 
-  for (var row = 0; row < 9; row++) {
+while (shuffledCells.length > 0){
+    var tempVal = myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9]
+    myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = 0
+    if (uniqueSudoku(myBoard, 0, 0)) {
+        shuffledCells.shift();
+        continue;
+    } else {
+        myBoard[Math.floor(shuffledCells[0] / 9)][(shuffledCells[0]) % 9] = tempVal;
+        shuffledCells.shift();
+        continue;
+    }
+}
+
+var countCells = 0;
+for (var row = 0; row < 9; row++) {
     for (var col = 0; col < 9; col++) {
-        if (selectedCells.includes(row*9 + col)) {
+        if (myBoard[row][col] != 0) {
+            countCells++;
             document.querySelector('[data-row="' + (row + 1) + '"][data-column="' + (col + 1) + '"]').innerHTML = myBoard[row][col];
         }
-      }
-  }
+    }
+}
+
+console.log(countCells)
+
+// selectedCells = shuffledCells.slice(0, 21);
+
+//   for (var row = 0; row < 9; row++) {
+//     for (var col = 0; col < 9; col++) {
+//         if (selectedCells.includes(row*9 + col)) {
+//             document.querySelector('[data-row="' + (row + 1) + '"][data-column="' + (col + 1) + '"]').innerHTML = myBoard[row][col];
+//         }
+//       }
+//   }
